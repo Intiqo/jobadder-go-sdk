@@ -114,7 +114,6 @@ func (c *JobAdderClient) Authenticate() (err error) {
 	return nil
 }
 
-func (c *JobAdderClient) RefreshToken(params *JobAdderClientParams) (err error) {
-	c.Params = params
+func (c *JobAdderClient) RefreshToken() (err error) {
 	return c.Authenticate()
 }

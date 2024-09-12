@@ -105,7 +105,7 @@ func main() {
  }
 
 // Get a new access token from the refresh token
- err = cl.RefreshToken(&params)
+ err = cl.RefreshToken()
  if err != nil {
   return
  }
@@ -154,23 +154,23 @@ func main() {
  sch := gocron.NewScheduler(time.UTC)
 
  // Schedule a job to refresh token
- c.scheduleTokenRefresh(cl.Params.TokenExpiryTime, cl.Params, sch)
+ c.scheduleTokenRefresh(cl.Params.TokenExpiryTime, sch)
 }
 
-func scheduleTokenRefresh(expiryTime time.Time, cl *client.JobAdderClientParams, sch *gocron.Scheduler) {
+func scheduleTokenRefresh(expiryTime time.Time, sch *gocron.Scheduler) {
  // Calculate the time 5 minutes before expiry
  refreshTime := expiryTime.Add(-5 * time.Minute)
  delay := refreshTime.Sub(time.Now())
 
  if delay > 0 {
   c.TokenJob, _ = sch.After(delay).Do(func() {
-   err := c.RefreshToken(cl.Params)
+   err := c.RefreshToken()
    if err != nil {
     // Handle token refresh error (log or retry)
     return
    }
    // Reschedule the job after token is refreshed
-   c.scheduleTokenRefresh(cl.Params.TokenExpiryTime, cl.Params, sch)
+   c.scheduleTokenRefresh(cl.Params.TokenExpiryTime, sch)
   })
  }
 }
