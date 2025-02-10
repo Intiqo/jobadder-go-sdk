@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "JobAdder API",
-    "description": "# Getting Started\n\n## Authentication\n\nJobAdder uses the OAuth 2.0 authorization code flow to issue API access tokens on behalf of users.\n\nAt a high-level, this flow has the following steps:\n\n- Your application directs the browser to the JobAdder authorization page.\n- The user authenticates and approves your application's request.\n- The user is redirected back to your application with an authorization code in the query string.\n- Your application sends this code to JobAdder to exchange for an API access token and optionally a refresh token.\n- Your application can now use these tokens to call the JobAdder API on behalf of the user.\n\n&nbsp;\n### 1. Redirect to the JobAdder authorization URL.\n\nYour application should redirect the user to the authorization URL\n\n```\nhttps://id.jobadder.com/connect/authorize\n```\n\nThe following query parameters should be passed with the GET request:\n\n| parameter     | description                                                                       |\n|:--------------|:----------------------------------------------------------------------------------|\n| response_type | **code** (required)                                                               |\n| client_id     | issued when you created your application (required)                               |\n| scope         | permissions to request, see [Scopes](#section/Getting-Started/Scopes) (required)  |\n| redirect_uri  | URL to redirect back to (required)                                                | \n| state         | unique string to be passed back (optional)                                        |\n\nThe **scope** parameter is a space-separated list of OAuth scopes indicating the desired access.\nSee [Scopes](#section/Getting-Started/Scopes) for the complete list of scopes.\n\nThe **redirect_uri** parameter must match one of the URLs specified when the client_id was issued.\n\nThe **state** parameter can be provided to carry through server-specific state. For example, you can use\nthis to help prevent forgery attacks.\n\nThe user will be presented with a login screen, and then a confirmation screen where they will grant your\napplication access to their JobAdder data.\n\n&nbsp;\n### 2. Receive an authorization code from JobAdder.\n\nAfter a successful login, the authorization server will redirect to the URL specified in step 1 passing \nthe following parameters passed with the GET request:\n\n| parameter     | description                           |\n|:--------------|:--------------------------------------|\n| code          | a temporary authorization code        | \n| state         | the unique string specified in step 1 |\n\nIf you passed a **state** parameter in step 1 then at this point you should compare the state parameter\nfrom this request with the state parameter from the request in step 1. If the states don't match then\nthe request may have been created by an unknown third party and you should abort the process.\n\nIf your request for access is denied by the user then the user will be redirected to the URL specified in step 1\nwith the following query parameters passed with the GET request:\n\n| parameter     | value         |\n|:--------------|:--------------|\n| error         | access_denied | \n\n&nbsp;\n### 3. Exchange the authorization code for an access token.\n\nThe authorization code received in step 2 will remain valid for 5 minutes and should be exchanged for an \naccess token. To do this, submit a POST request to the token URL:\n\n```\nhttps://id.jobadder.com/connect/token\n```\n\nThe following  parameters should be included in the POST request:\n\n| parameter     | description                                                     |\n|:--------------|:----------------------------------------------------------------|\n| client_id     | issued when you created your application (required)             |\n| client_secret | issued when you created your application (required)             |\n| grant_type    | **authorization_code** (required)                               |\n| code          | the temporary authorization code received in step 2 (required)  |\n| redirect_uri  | the URL specified in step 1 (required)                          |\n\nThis request will return a JSON response containing the access token, for example\n\n```json\n{\n  access_token: \"31ff7431b4c1dde02e386122702f5460\",\n  expires_in: 3600,\n  token_type: \"Bearer\",\n  refresh_token: \"e7672885d6da2db1e56d200dd292c801\",\n  api: \"https://api.jobadder.com/v2\"\n}\n```\n\n| parameter     | description                                                                           |\n|:--------------|:--------------------------------------------------------------------------------------|\n| access_token  | token to be used as the Bearer token in the Authorization header of all API requests  |\n| expires_in    | expiration time of the access token in seconds since the response was generated       |\n| refresh_token | token to be used to request new access tokens                                         |\n| api           | The base URL to use for API access                                                    |\n\n&nbsp;\n### 4. Exchange a refresh token for an access token.\n\nThe access token has a limited lifetime (currently 60 minutes). \nIf your application requested the **offline_access** scope (in step 1) then it is possible to gain \nextended access to the user's data by requesting a new access token using the refresh token.\nTo do this, submit a POST request to the token URL:\n\n```\nhttps://id.jobadder.com/connect/token\n```\n\nThe following  parameters should be included in the POST request:\n\n| parameter     | description                                         |\n|:--------------|:----------------------------------------------------|\n| client_id     | issued when you created your application (required) |\n| client_secret | issued when you created your application (required) |\n| grant_type    | **refresh_token** (required)                        |\n| refresh_token | the refresh token returned in step 3                |\n\nThis request will return a JSON response containing a new access token and request token.\n```json\n{\n  access_token: \"d2534958b2d3b9e3b0e16c98f91f0184\",\n  expires_in: 3600,\n  token_type: \"Bearer\",\n  refresh_token: \"e1b495fa69c9bdacbc7e5dd535d4564f\",\n  api: \"https://api.jobadder.com/v2\"\n}\n```\n\n&nbsp;\n## Scopes\n\nScopes allow you to clearly specify the type of information your application will access and the level of access it will need.\n\nIt's a good idea to limit the scopes that you request to the bare minimum so that users will feel confident with your application when granting access to their data.\n\n\n| scope | description |\n|:------|:------------|\n| **read** | View JobAdder data |\n| **write** | Manage JobAdder data |\n| **read_candidate** | View candidates |\n| **write_candidate** | Manage candidates |\n| **read_candidate_note** | View candidate notes |\n| **write_candidate_note** | Manage candidate notes |\n| **manage_candidate_custom** | Manage candidate custom fields |\n| **read_company** | View companies |\n| **write_company** | Manage companies |\n| **read_company_note** | View company notes |\n| **write_company_note** | Manage company notes |\n| **manage_company_custom** | Manage company custom fields |\n| **read_contact** | View contacts |\n| **write_contact** | Manage contacts |\n| **read_contact_note** | View contact notes |\n| **write_contact_note** | Manage contact notes |\n| **manage_contact_custom** | Manage contact custom fields |\n| **read_jobad** | View job ads |\n| **write_jobad** | Manage job ads |\n| **read_jobapplication** | View job applications |\n| **write_jobapplication** | Manage job applications |\n| **read_jobapplication_note** | View job application notes |\n| **write_jobapplication_note** | Manage job application notes |\n| **manage_jobapplication_custom** | Manage job application custom fields |\n| **read_interview** | View job interviews |\n| **write_interview** | Manage job interviews |\n| **read_job** | View jobs |\n| **write_job** | Manage jobs |\n| **read_job_note** | View job notes |\n| **write_job_note** | Manage job notes |\n| **manage_job_custom** | Manage job custom fields |\n| **read_placement** | View placements |\n| **write_placement** | Manage placements |\n| **read_placement_note** | View placement notes |\n| **write_placement_note** | Manage placement notes |\n| **manage_placement_custom** | Manage placement custom fields |\n| **read_requisition** | View requisitions |\n| **write_requisition** | Manage requisitions |\n| **read_requisition_note** | View requisition notes |\n| **write_requisition_note** | Manage requisition notes |\n| **read_float** | View floats |\n| **read_submission** | View submissions |\n| **read_note** | View notes |\n| **write_note** | Manage notes |\n| **read_folder** | View folders |\n| **write_folder** | Manage folders |\n| **read_user** | View users |\n| **read_usergroup** | View user groups |\n| **read_usertask** | View user tasks |\n| **partner_jobboard** | View active job ads and submit job applications |\n| **partner_ui_action** | Add partner actions to JobAdder |\n| **offline_access** | Access JobAdder data for an extended period of time, must always be combined with other scopes |\n\n\n&nbsp;\n# Webhooks\n\nThe JobAdder API supports webhooks for event notification using the [Webhook API](#tag/Webhook-API:Webhooks).\n\nThe order of webhook notifications are not guaranteed, and idempotency may lead to duplicate notifications.\n\n&nbsp;\n## Notification messages\n\nWhen an event occurs, JobAdder will issue an HTTP POST to the URL you specified on your webhook.\n\n```json\n{\n  \"apiVersion\": 2,\n  \"event\": \"placement_approved\",\n  \"eventId\": \"00000000-0000-0000-0000-000000000000\",\n  \"eventDate\": \"2019-01-01T09:00:00Z\",\n  \"eventUser\": {},\n  \"eventData\": {},\n  <event details>\n}\n```\n\n&nbsp;\n## Events\n\nAll events require the **offline_access** scope, along with the scopes relevant to the event.\n\n| event name                      | required scopes                                   |\n|:--------------------------------|:--------------------------------------------------|\n| job_status_changed              | read or read_job                                  |\n| job_invoice_sent                | read or read_job                                  |\n| job_partner_action              | read or read_job, partner_ui_action               |\n| jobad_posted                    | read or read_jobad                                |\n| jobad_expired                   | read or read_jobad                                |\n| jobad_partner_action            | read or read_jobad, partner_ui_action             |\n| candidate_status_changed        | read or read_candidate                            |\n| candidate_updated               | read or read_candidate                            |\n| candidate_partner_action        | read or read_candidate, partner_ui_action         |\n| jobapplication_status_changed   | read or read_jobapplication                       |\n| jobapplication_partner_action   | read or read_jobapplication, partner_ui_action    |\n| placement_approved              | read or read_placement                            |\n| placement_status_changed        | read or read_placement                            |\n| placement_partner_action        | read or read_placement, partner_ui_action         |\n| company_status_changed          | read or read_company                              |\n| company_partner_action          | read or read_company, partner_ui_action           |\n| contact_status_changed          | read or read_contact                              |\n| contact_partner_action          | read or read_contact, partner_ui_action           |\n| interview_scheduled             | read or read_interview                            |\n| interview_evaluation_submitted  | read or read_interview                            |\n| folder_job_added                | read or read_job, read or read_folder             |\n| folder_job_removed              | read or read_job, read or read_folder             |\n| folder_candidate_added          | read or read_candidate, read or read_folder       |\n| folder_candidate_removed        | read or read_candidate, read or read_folder       |\n| folder_jobapplication_added     | read or read_jobapplication, read or read_folder  |\n| folder_jobapplication_removed   | read or read_jobapplication, read or read_folder  |\n| folder_placement_added          | read or read_placement, read or read_folder       |\n| folder_placement_removed        | read or read_placement, read or read_folder       |\n| folder_company_added            | read or read_company, read or read_folder         |\n| folder_company_removed          | read or read_company, read or read_folder         |\n| folder_contact_added            | read or read_contact, read or read_folder         |\n| folder_contact_removed          | read or read_contact, read or read_folder         |\n| folder_updated                  | read or read_folder                               |\n| user_suspended                  | read or read_user                                 |\n| sms_sent                        | read                                              |\n\n&nbsp;\n# Release Notes\n\n### Upcoming changes\n\n| eta | description |\n| :-- | :---------- |\n\n### Recent changes\n\n| date       | description                                                                                                         |\n| :--------- | :------------------------------------------------------------------------------------------------------------------ |\n| 2024-07-12 | Add MobileNormalized field to Candidates/Contacts endpoints                                                         |\n| 2024-05-27 | sms_sent webhook events                                                                                             |\n| 2024-05-08 | [Contact skills](#operation/PutContactSkills) endpoints                                                             |\n| 2023-08-21 | Add Createdbyintegration option to [Add Candidate Note](#operation/AddCandidateNote)                                | \n| 2023-08-10 | Add UpdateAt filter to [Find interviews](#operation/FindInterviews)                                                 | \n| 2023-07-10 | Add DateOfBirth filter to [Find candidates](#operation/FindCandidates)                                              | \n| 2023-06-13 | Add location in find Jobs endpoint                                                                                  | \n| 2023-06-01 | folder_updated, user_suspended webhook events                                                                       |\n| 2022-11-23 | Folders API optimized and added embedMode and embed option.                                                         |\n| 2022-08-18 | Added updatedAt filter to all entity Activities API endpoint                                                        |\n| 2022-08-15 | [Find Notes](#operation/FindNotes) - new filter (entityType)                                                        |\n| 2022-06-14 | Added Job invoices endpoints                                                                                        |\n| 2022-06-14 | Added JobInvoiceSent Webhook event                                                                                  |\n| 2022-05-16 | Add OwnerStatus query param to FindFolder api                                                                       |\n| 2022-05-09 | CRUD endpoints for Rate Card (Astute)                                                                               |\n| 2022-03-31 | Added CandidateUpdated Webhook event                                                                                |\n| 2022-03-07 | Update Notes query supports more embed options                                                                      |\n| 2022-02-22 | Add or remove entities in folder                                                                                    |\n| 2022-01-17 | Update GET Requisition to include Requisition Form ID                                                               |\n| 2022-01-17 | [Get all Requisition Forms and Fields](#operation/GetRequisitionForms) endpoint added                               |\n| 2022-01-05 | Add temp time and week data in get Placement endpoint                                                               |\n| 2021-11-25 | Add new endpoint to Candidate for attachments                                                                       |\n| 2021-11-18 | FIX: Retrieve payroll billings did not filter correctly by provider (applicable for FT360 users only)               |\n| 2021-11-12 | Add temp time and week data in get Job endpoint                                                                     |\n| 2021-11-05 | Add unsubscribed field to Candidates and Contacts (get, create, update) related endpoints                           |\n| 2021-10-30 | Update file upload whitelist to allow .csv uploads                                                                  |\n| 2021-10-30 | Update Requisition Attachment [DELETE](#operation/DeleteRequisitionAttachment) param attachmentType to attachmentId |\n| 2021-10-30 | Update Requisition Attachment [GET](#operation/GetRequisitionAttachment) param attachmentType to attachmentId       |\n| 2021-10-30 | [Get all Requisition Attachments](#operation/GetRequisitionAttachmentList) endpoint added                           |\n| 2021-10-28 | Add Candidate ExternalID for payroll billing fields (applicable for FT360 users only)                               |\n| 2021-09-27 | Add new endpoint to Candidate for payroll billing fields (applicable for FT360 users only)                          |\n| 2021-08-27 | FIX: write_interview returns invalid_scope in auth request                                                          |\n| 2021-07-29 | FIX: Update a placement did not update billing details                                                              |\n| 2021-07-29 | FIX: Update a candidate did not update mobile number in the candidate header                                        |\n| 2021-07-29 | FIX: Find contacts not finding mobile numbers                                                                       |\n| 2021-07-29 | FIX: Candidate Upload Attachment - Add a single attachment incorrectly flagged                                      |\n| 2021-07-29 | Add date of birth, emergency contact and phone fields to Candidate (get, create, update) related endpoints          |\n| 2021-07-29 | Add legal name field to Companies (get, create, update) related endpoints                                           |\n| 2021-07-29 | [Find Candidates](#operation/FindCandidates) - new filter (location)                                                |\n| 2021-07-29 | Add Other Apply URLs in Job Ad (get) endpoint                                                                       |\n| 2021-04-15 | Rate Calculator (update, get) related endpoints                                                                     |\n| 2021-03-15 | Tasks (create, update, get, delete) related endpoints                                                               |\n| 2021-03-15 | Interviews (create, update, delete) related endpoints                                                               |\n| 2021-01-11 | [Find Candidates](#operation/FindCandidates) - new filters (current position, city, state)                          |\n| 2021-01-11 | Create Pending Candidates when using [/candidates/](#operation/AddCandidate)                                        |\n| 2020-11-10 | Activities (create, find) related endpoints                                                                         |\n| 2019-09-23 | FIX: Status change note generation sometimes included an incorrect user name in the note content                    |\n| 2019-07-04 | FIX: [Find webhooks](#operation/FindWebhooks) events query parameter was not filtering the results                  |\n| 2019-06-11 | [Candidate skill coding](#operation/PutCandidateSkills)                                                             |\n| 2019-06-03 | Additional deleted record endpoints                                                                                 |\n| 2019-06-03 | embed=self query parameter to embed full details in results returned by key endpoints                               |\n| 2019-05-26 | [embed=self](#operation/FindCandidates) query parameter to embed full details and related resources on candidates   |\n| 2019-05-26 | [/candidates/deleted](#operation/DeletedCandidates) endpoint added to list recently deleted candidates              |\n| 2019-05-26 | [/contacts/deleted](#operation/DeletedContacts) endpoint added to list recently deleted contacts                    |\n| 2019-05-25 | jobad_posted webhook event                                                                                          |\n| 2019-05-25 | jobad_expired webhook event                                                                                         |\n| 2019-05-16 | Optional authorization header on webhook events                                                                     |\n| 2019-05-16 | Interview evaluation endpoints                                                                                      |\n| 2019-05-16 | interview_evaluation_submitted webhook event                                                                        |\n| 2019-05-16 | Interview endpoints for related entities                                                                            |\n| 2019-05-09 | [/interviews](#tag/Interview-API:Interviews) endpoint added to list scheduled internal and external interviews      |\n| 2019-05-09 | interview_scheduled webhook event                                                                                   |\n",
+    "description": "# Getting Started\r\n\r\n## Authentication\r\n\r\nJobAdder uses the OAuth 2.0 authorization code flow to issue API access tokens on behalf of users.\r\n\r\nAt a high-level, this flow has the following steps:\r\n\r\n- Your application directs the browser to the JobAdder authorization page.\r\n- The user authenticates and approves your application's request.\r\n- The user is redirected back to your application with an authorization code in the query string.\r\n- Your application sends this code to JobAdder to exchange for an API access token and optionally a refresh token.\r\n- Your application can now use these tokens to call the JobAdder API on behalf of the user.\r\n\r\n&nbsp;\r\n### 1. Redirect to the JobAdder authorization URL.\r\n\r\nYour application should redirect the user to the authorization URL\r\n\r\n```\r\nhttps://id.jobadder.com/connect/authorize\r\n```\r\n\r\nThe following query parameters should be passed with the GET request:\r\n\r\n| parameter     | description                                                                       |\r\n|:--------------|:----------------------------------------------------------------------------------|\r\n| response_type | **code** (required)                                                               |\r\n| client_id     | issued when you created your application (required)                               |\r\n| scope         | permissions to request, see [Scopes](#section/Getting-Started/Scopes) (required)  |\r\n| redirect_uri  | URL to redirect back to (required)                                                | \r\n| state         | unique string to be passed back (optional)                                        |\r\n\r\nThe **scope** parameter is a space-separated list of OAuth scopes indicating the desired access.\r\nSee [Scopes](#section/Getting-Started/Scopes) for the complete list of scopes.\r\n\r\nThe **redirect_uri** parameter must match one of the URLs specified when the client_id was issued.\r\n\r\nThe **state** parameter can be provided to carry through server-specific state. For example, you can use\r\nthis to help prevent forgery attacks.\r\n\r\nThe user will be presented with a login screen, and then a confirmation screen where they will grant your\r\napplication access to their JobAdder data.\r\n\r\n&nbsp;\r\n### 2. Receive an authorization code from JobAdder.\r\n\r\nAfter a successful login, the authorization server will redirect to the URL specified in step 1 passing \r\nthe following parameters passed with the GET request:\r\n\r\n| parameter     | description                           |\r\n|:--------------|:--------------------------------------|\r\n| code          | a temporary authorization code        | \r\n| state         | the unique string specified in step 1 |\r\n\r\nIf you passed a **state** parameter in step 1 then at this point you should compare the state parameter\r\nfrom this request with the state parameter from the request in step 1. If the states don't match then\r\nthe request may have been created by an unknown third party and you should abort the process.\r\n\r\nIf your request for access is denied by the user then the user will be redirected to the URL specified in step 1\r\nwith the following query parameters passed with the GET request:\r\n\r\n| parameter     | value         |\r\n|:--------------|:--------------|\r\n| error         | access_denied | \r\n\r\n&nbsp;\r\n### 3. Exchange the authorization code for an access token.\r\n\r\nThe authorization code received in step 2 will remain valid for 5 minutes and should be exchanged for an \r\naccess token. To do this, submit a POST request to the token URL:\r\n\r\n```\r\nhttps://id.jobadder.com/connect/token\r\n```\r\n\r\nThe following  parameters should be included in the POST request:\r\n\r\n| parameter     | description                                                     |\r\n|:--------------|:----------------------------------------------------------------|\r\n| client_id     | issued when you created your application (required)             |\r\n| client_secret | issued when you created your application (required)             |\r\n| grant_type    | **authorization_code** (required)                               |\r\n| code          | the temporary authorization code received in step 2 (required)  |\r\n| redirect_uri  | the URL specified in step 1 (required)                          |\r\n\r\nThis request will return a JSON response containing the access token, for example\r\n\r\n```json\r\n{\r\n  access_token: \"31ff7431b4c1dde02e386122702f5460\",\r\n  expires_in: 3600,\r\n  token_type: \"Bearer\",\r\n  refresh_token: \"e7672885d6da2db1e56d200dd292c801\",\r\n  api: \"https://api.jobadder.com/v2\"\r\n}\r\n```\r\n\r\n| parameter     | description                                                                           |\r\n|:--------------|:--------------------------------------------------------------------------------------|\r\n| access_token  | token to be used as the Bearer token in the Authorization header of all API requests  |\r\n| expires_in    | expiration time of the access token in seconds since the response was generated       |\r\n| refresh_token | token to be used to request new access tokens                                         |\r\n| api           | The base URL to use for API access                                                    |\r\n\r\n&nbsp;\r\n### 4. Exchange a refresh token for an access token.\r\n\r\nThe access token has a limited lifetime (currently 60 minutes). \r\nIf your application requested the **offline_access** scope (in step 1) then it is possible to gain \r\nextended access to the user's data by requesting a new access token using the refresh token.\r\nTo do this, submit a POST request to the token URL:\r\n\r\n```\r\nhttps://id.jobadder.com/connect/token\r\n```\r\n\r\nThe following  parameters should be included in the POST request:\r\n\r\n| parameter     | description                                         |\r\n|:--------------|:----------------------------------------------------|\r\n| client_id     | issued when you created your application (required) |\r\n| client_secret | issued when you created your application (required) |\r\n| grant_type    | **refresh_token** (required)                        |\r\n| refresh_token | the refresh token returned in step 3                |\r\n\r\nThis request will return a JSON response containing a new access token and request token.\r\n```json\r\n{\r\n  access_token: \"d2534958b2d3b9e3b0e16c98f91f0184\",\r\n  expires_in: 3600,\r\n  token_type: \"Bearer\",\r\n  refresh_token: \"e1b495fa69c9bdacbc7e5dd535d4564f\",\r\n  api: \"https://api.jobadder.com/v2\"\r\n}\r\n```\r\n\r\n&nbsp;\r\n## Scopes\r\n\r\nScopes allow you to clearly specify the type of information your application will access and the level of access it will need.\r\n\r\nIt's a good idea to limit the scopes that you request to the bare minimum so that users will feel confident with your application when granting access to their data.\r\n\r\n\r\n| scope | description |\r\n|:------|:------------|\r\n| **read** | View JobAdder data |\r\n| **write** | Manage JobAdder data |\r\n| **read_candidate** | View candidates |\r\n| **write_candidate** | Manage candidates |\r\n| **read_candidate_note** | View candidate notes |\r\n| **write_candidate_note** | Manage candidate notes |\r\n| **manage_candidate_custom** | Manage candidate custom fields |\r\n| **read_company** | View companies |\r\n| **write_company** | Manage companies |\r\n| **read_company_note** | View company notes |\r\n| **write_company_note** | Manage company notes |\r\n| **manage_company_custom** | Manage company custom fields |\r\n| **read_contact** | View contacts |\r\n| **write_contact** | Manage contacts |\r\n| **read_contact_note** | View contact notes |\r\n| **write_contact_note** | Manage contact notes |\r\n| **manage_contact_custom** | Manage contact custom fields |\r\n| **read_jobad** | View job ads |\r\n| **write_jobad** | Manage job ads |\r\n| **read_jobapplication** | View job applications |\r\n| **write_jobapplication** | Manage job applications |\r\n| **read_jobapplication_note** | View job application notes |\r\n| **write_jobapplication_note** | Manage job application notes |\r\n| **manage_jobapplication_custom** | Manage job application custom fields |\r\n| **read_interview** | View job interviews |\r\n| **write_interview** | Manage job interviews |\r\n| **read_events** | View events (Interviews/Meetings) |\r\n| **write_events** | Manage events (Interviews/Meetings) |\r\n| **read_job** | View jobs |\r\n| **write_job** | Manage jobs |\r\n| **read_job_note** | View job notes |\r\n| **write_job_note** | Manage job notes |\r\n| **manage_job_custom** | Manage job custom fields |\r\n| **read_placement** | View placements |\r\n| **write_placement** | Manage placements |\r\n| **read_placement_note** | View placement notes |\r\n| **write_placement_note** | Manage placement notes |\r\n| **manage_placement_custom** | Manage placement custom fields |\r\n| **read_requisition** | View requisitions |\r\n| **write_requisition** | Manage requisitions |\r\n| **read_requisition_note** | View requisition notes |\r\n| **write_requisition_note** | Manage requisition notes |\r\n| **read_float** | View floats |\r\n| **read_submission** | View submissions |\r\n| **read_note** | View notes |\r\n| **write_note** | Manage notes |\r\n| **read_folder** | View folders |\r\n| **write_folder** | Manage folders |\r\n| **read_user** | View users |\r\n| **read_usergroup** | View user groups |\r\n| **read_usertask** | View user tasks |\r\n| **partner_jobboard** | View active job ads and submit job applications |\r\n| **partner_ui_action** | Add partner actions to JobAdder |\r\n| **offline_access** | Access JobAdder data for an extended period of time, must always be combined with other scopes |\r\n\r\n\r\n&nbsp;\r\n# Webhooks\r\n\r\nThe JobAdder API supports webhooks for event notification using the [Webhook API](#tag/Webhook-API:Webhooks).\r\n\r\nThe order of webhook notifications are not guaranteed, and idempotency may lead to duplicate notifications.\r\n\r\n&nbsp;\r\n## Notification messages\r\n\r\nWhen an event occurs, JobAdder will issue an HTTP POST to the URL you specified on your webhook.\r\n\r\n```json\r\n{\r\n  \"apiVersion\": 2,\r\n  \"event\": \"placement_approved\",\r\n  \"eventId\": \"00000000-0000-0000-0000-000000000000\",\r\n  \"eventDate\": \"2019-01-01T09:00:00Z\",\r\n  \"eventUser\": {},\r\n  \"eventData\": {},\r\n  <event details>\r\n}\r\n```\r\n\r\n&nbsp;\r\n## Events\r\n\r\nAll events require the **offline_access** scope, along with the scopes relevant to the event.\r\n\r\n| event name                                        | required scopes                                   |\r\n|:--------------------------------------------------|:--------------------------------------------------|\r\n| job_status_changed                                | read or read_job                                  |\r\n| job_invoice_sent                                  | read or read_job                                  |\r\n| job_partner_action                                | read or read_job, partner_ui_action               |\r\n| jobad_posted                                      | read or read_jobad                                |\r\n| jobad_expired                                     | read or read_jobad                                |\r\n| jobad_partner_action                              | read or read_jobad, partner_ui_action             |\r\n| candidate_status_changed                          | read or read_candidate                            |\r\n| candidate_updated                                 | read or read_candidate                            |\r\n| candidate_partner_action                          | read or read_candidate, partner_ui_action         |\r\n| jobapplication_status_changed                     | read or read_jobapplication                       |\r\n| jobapplication_partner_action                     | read or read_jobapplication, partner_ui_action    |\r\n| placement_approved                                | read or read_placement                            |\r\n| placement_status_changed                          | read or read_placement                            |\r\n| placement_partner_action                          | read or read_placement, partner_ui_action         |\r\n| company_status_changed                            | read or read_company                              |\r\n| company_partner_action                            | read or read_company, partner_ui_action           |\r\n| contact_status_changed                            | read or read_contact                              |\r\n| contact_partner_action                            | read or read_contact, partner_ui_action           |\r\n| interview_scheduled                               | read or read_interview                            |\r\n| interview_evaluation_submitted                    | read or read_interview                            |\r\n| event_scheduled                                   | read or read_events                               |\r\n| event_interview_evaluation_submitted              | read or read_events                               |\r\n| folder_job_added                                  | read or read_job, read or read_folder             |\r\n| folder_job_removed                                | read or read_job, read or read_folder             |\r\n| folder_candidate_added                            | read or read_candidate, read or read_folder       |\r\n| folder_candidate_removed                          | read or read_candidate, read or read_folder       |\r\n| folder_jobapplication_added                       | read or read_jobapplication, read or read_folder  |\r\n| folder_jobapplication_removed                     | read or read_jobapplication, read or read_folder  |\r\n| folder_placement_added                            | read or read_placement, read or read_folder       |\r\n| folder_placement_removed                          | read or read_placement, read or read_folder       |\r\n| folder_company_added                              | read or read_company, read or read_folder         |\r\n| folder_company_removed                            | read or read_company, read or read_folder         |\r\n| folder_contact_added                              | read or read_contact, read or read_folder         |\r\n| folder_contact_removed                            | read or read_contact, read or read_folder         |\r\n| folder_updated                                    | read or read_folder                               |\r\n| user_suspended                                    | read or read_user                                 |\r\n| sms_sent                                          | read                                              |\r\n\r\n&nbsp;\r\n# Release Notes\r\n\r\n### Upcoming changes\r\n\r\n| eta | description |\r\n| :-- | :---------- |\r\n\r\n### Recent changes\r\n\r\n| date       | description                                                                                                         |\r\n| :--------- | :------------------------------------------------------------------------------------------------------------------ |\r\n| 2024-11-22 | New endpoints for event scheduling                                                                                  |\r\n| 2024-11-22 | New webhooks for event_scheduled and event_interview_evaluation_submitted                                           |\r\n| 2024-10-10 | Limit note content to 65535 characters                                                                              |\r\n| 2024-09-26 | Add Opportunity endpoints                                                                                           |\r\n| 2024-07-12 | Add MobileNormalized field to Candidates/Contacts endpoints                                                         |\r\n| 2024-05-27 | sms_sent webhook events                                                                                             |\r\n| 2024-05-08 | [Contact skills](#operation/PutContactSkills) endpoints                                                             |\r\n| 2023-08-21 | Add Createdbyintegration option to [Add Candidate Note](#operation/AddCandidateNote)                                |\r\n| 2023-08-10 | Add UpdateAt filter to [Find interviews](#operation/FindInterviews)                                                 |\r\n| 2023-07-10 | Add DateOfBirth filter to [Find candidates](#operation/FindCandidates)                                              |\r\n| 2023-06-13 | Add location in find Jobs endpoint                                                                                  |\r\n| 2023-06-01 | folder_updated, user_suspended webhook events                                                                       |\r\n| 2022-11-23 | Folders API optimized and added embedMode and embed option.                                                         |\r\n| 2022-08-18 | Added updatedAt filter to all entity Activities API endpoint                                                        |\r\n| 2022-08-15 | [Find Notes](#operation/FindNotes) - new filter (entityType)                                                        |\r\n| 2022-06-14 | Added Job invoices endpoints                                                                                        |\r\n| 2022-06-14 | Added JobInvoiceSent Webhook event                                                                                  |\r\n| 2022-05-16 | Add OwnerStatus query param to FindFolder api                                                                       |\r\n| 2022-05-09 | CRUD endpoints for Rate Card (Astute)                                                                               |\r\n| 2022-03-31 | Added CandidateUpdated Webhook event                                                                                |\r\n| 2022-03-07 | Update Notes query supports more embed options                                                                      |\r\n| 2022-02-22 | Add or remove entities in folder                                                                                    |\r\n| 2022-01-17 | Update GET Requisition to include Requisition Form ID                                                               |\r\n| 2022-01-17 | [Get all Requisition Forms and Fields](#operation/GetRequisitionForms) endpoint added                               |\r\n| 2022-01-05 | Add temp time and week data in get Placement endpoint                                                               |\r\n| 2021-11-25 | Add new endpoint to Candidate for attachments                                                                       |\r\n| 2021-11-18 | FIX: Retrieve payroll billings did not filter correctly by provider (applicable for FT360 users only)               |\r\n| 2021-11-12 | Add temp time and week data in get Job endpoint                                                                     |\r\n| 2021-11-05 | Add unsubscribed field to Candidates and Contacts (get, create, update) related endpoints                           |\r\n| 2021-10-30 | Update file upload whitelist to allow .csv uploads                                                                  |\r\n| 2021-10-30 | Update Requisition Attachment [DELETE](#operation/DeleteRequisitionAttachment) param attachmentType to attachmentId |\r\n| 2021-10-30 | Update Requisition Attachment [GET](#operation/GetRequisitionAttachment) param attachmentType to attachmentId       |\r\n| 2021-10-30 | [Get all Requisition Attachments](#operation/GetRequisitionAttachmentList) endpoint added                           |\r\n| 2021-10-28 | Add Candidate ExternalID for payroll billing fields (applicable for FT360 users only)                               |\r\n| 2021-09-27 | Add new endpoint to Candidate for payroll billing fields (applicable for FT360 users only)                          |\r\n| 2021-08-27 | FIX: write_interview returns invalid_scope in auth request                                                          |\r\n| 2021-07-29 | FIX: Update a placement did not update billing details                                                              |\r\n| 2021-07-29 | FIX: Update a candidate did not update mobile number in the candidate header                                        |\r\n| 2021-07-29 | FIX: Find contacts not finding mobile numbers                                                                       |\r\n| 2021-07-29 | FIX: Candidate Upload Attachment - Add a single attachment incorrectly flagged                                      |\r\n| 2021-07-29 | Add date of birth, emergency contact and phone fields to Candidate (get, create, update) related endpoints          |\r\n| 2021-07-29 | Add legal name field to Companies (get, create, update) related endpoints                                           |\r\n| 2021-07-29 | [Find Candidates](#operation/FindCandidates) - new filter (location)                                                |\r\n| 2021-07-29 | Add Other Apply URLs in Job Ad (get) endpoint                                                                       |\r\n| 2021-04-15 | Rate Calculator (update, get) related endpoints                                                                     |\r\n| 2021-03-15 | Tasks (create, update, get, delete) related endpoints                                                               |\r\n| 2021-03-15 | Interviews (create, update, delete) related endpoints                                                               |\r\n| 2021-01-11 | [Find Candidates](#operation/FindCandidates) - new filters (current position, city, state)                          |\r\n| 2021-01-11 | Create Pending Candidates when using [/candidates/](#operation/AddCandidate)                                        |\r\n| 2020-11-10 | Activities (create, find) related endpoints                                                                         |\r\n| 2019-09-23 | FIX: Status change note generation sometimes included an incorrect user name in the note content                    |\r\n| 2019-07-04 | FIX: [Find webhooks](#operation/FindWebhooks) events query parameter was not filtering the results                  |\r\n| 2019-06-11 | [Candidate skill coding](#operation/PutCandidateSkills)                                                             |\r\n| 2019-06-03 | Additional deleted record endpoints                                                                                 |\r\n| 2019-06-03 | embed=self query parameter to embed full details in results returned by key endpoints                               |\r\n| 2019-05-26 | [embed=self](#operation/FindCandidates) query parameter to embed full details and related resources on candidates   |\r\n| 2019-05-26 | [/candidates/deleted](#operation/DeletedCandidates) endpoint added to list recently deleted candidates              |\r\n| 2019-05-26 | [/contacts/deleted](#operation/DeletedContacts) endpoint added to list recently deleted contacts                    |\r\n| 2019-05-25 | jobad_posted webhook event                                                                                          |\r\n| 2019-05-25 | jobad_expired webhook event                                                                                         |\r\n| 2019-05-16 | Optional authorization header on webhook events                                                                     |\r\n| 2019-05-16 | Interview evaluation endpoints                                                                                      |\r\n| 2019-05-16 | interview_evaluation_submitted webhook event                                                                        |\r\n| 2019-05-16 | Interview endpoints for related entities                                                                            |\r\n| 2019-05-09 | [/interviews](#tag/Interview-API:Interviews) endpoint added to list scheduled internal and external interviews      |\r\n| 2019-05-09 | interview_scheduled webhook event                                                                                   |\r\n",
     "version": "v2",
     "x-logo": {
       "url": "/v2/docs/logo.svg",
@@ -16,6 +16,402 @@
     }
   ],
   "paths": {
+    "/imports/contacts": {
+      "post": {
+        "tags": [
+          "Import API:Contacts"
+        ],
+        "summary": "Import Contacts",
+        "operationId": "PostImportContacts",
+        "parameters": [
+          {
+            "name": "addNote",
+            "in": "query",
+            "description": "Create Note on all Imported Records",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "addCompany",
+            "in": "query",
+            "description": "Create company records for those that don't yet exist",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "notify_email",
+            "in": "query",
+            "description": "Specify an email address to receive notifications after the file is processed",
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "fileData"
+                ],
+                "type": "object",
+                "properties": {
+                  "fileData": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Requested import contact",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedDataImportModel"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "write",
+              "write_contact"
+            ]
+          }
+        ],
+        "x-apiName": "Import API",
+        "x-apiGroup": "Contacts",
+        "x-apiOrder": 1
+      }
+    },
+    "/imports/contacts/{importId}": {
+      "get": {
+        "tags": [
+          "Import API:Contacts"
+        ],
+        "summary": "Get detail import contact",
+        "operationId": "GetImportContacts",
+        "parameters": [
+          {
+            "name": "importId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Requested data import details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataImportModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Data import was not found"
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "read",
+              "read_contact"
+            ]
+          }
+        ],
+        "x-apiName": "Import API",
+        "x-apiGroup": "Contacts",
+        "x-apiOrder": 1
+      }
+    },
+    "/imports/contacts/{importId}/skippedrecords": {
+      "get": {
+        "tags": [
+          "Import API:Contacts"
+        ],
+        "summary": "Get skipped records import contact",
+        "operationId": "GetSkippedRecordsImportContacts",
+        "parameters": [
+          {
+            "name": "importId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Data import was not found"
+          },
+          "200": {
+            "description": "Requested skipped records import contact",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "read",
+              "read_contact"
+            ]
+          }
+        ],
+        "x-apiName": "Import API",
+        "x-apiGroup": "Contacts",
+        "x-apiOrder": 1
+      }
+    },
+    "/imports/contacts/template": {
+      "get": {
+        "tags": [
+          "Import API:Contacts"
+        ],
+        "summary": "Get template import contact",
+        "operationId": "GetTemplateImportContacts",
+        "responses": {
+          "200": {
+            "description": "Requested template import contact",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "read",
+              "read_contact"
+            ]
+          }
+        ],
+        "x-apiName": "Import API",
+        "x-apiGroup": "Contacts",
+        "x-apiOrder": 1
+      }
+    },
+    "/imports/notes": {
+      "post": {
+        "tags": [
+          "Import API:Notes"
+        ],
+        "summary": "Import Notes",
+        "operationId": "PostImportNotes",
+        "parameters": [
+          {
+            "name": "notify_email",
+            "in": "query",
+            "description": "Specify an email address to receive notifications after the file is processed",
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "fileData"
+                ],
+                "type": "object",
+                "properties": {
+                  "fileData": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Requested import note",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedDataImportModel"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "write",
+              "write_note"
+            ]
+          }
+        ],
+        "x-apiName": "Import API",
+        "x-apiGroup": "Notes",
+        "x-apiOrder": 1
+      }
+    },
+    "/imports/notes/{importId}": {
+      "get": {
+        "tags": [
+          "Import API:Notes"
+        ],
+        "summary": "Get detail import note",
+        "operationId": "GetImportNotes",
+        "parameters": [
+          {
+            "name": "importId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Requested data import details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataImportModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Data import was not found"
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "read",
+              "read_note"
+            ]
+          }
+        ],
+        "x-apiName": "Import API",
+        "x-apiGroup": "Notes",
+        "x-apiOrder": 1
+      }
+    },
+    "/imports/notes/{importId}/skippedrecords": {
+      "get": {
+        "tags": [
+          "Import API:Notes"
+        ],
+        "summary": "Get skipped records import note",
+        "operationId": "GetSkippedRecordsImportNotes",
+        "parameters": [
+          {
+            "name": "importId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Data import was not found"
+          },
+          "200": {
+            "description": "Requested skipped records import note",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "read",
+              "read_note"
+            ]
+          }
+        ],
+        "x-apiName": "Import API",
+        "x-apiGroup": "Notes",
+        "x-apiOrder": 1
+      }
+    },
+    "/imports/notes/template": {
+      "get": {
+        "tags": [
+          "Import API:Notes"
+        ],
+        "summary": "Get template import note",
+        "operationId": "GetTemplateImportNotes",
+        "responses": {
+          "200": {
+            "description": "Requested template import note",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "read",
+              "read_note"
+            ]
+          }
+        ],
+        "x-apiName": "Import API",
+        "x-apiGroup": "Notes",
+        "x-apiOrder": 1
+      }
+    },
     "/opportunities": {
       "get": {
         "tags": [
@@ -23,6 +419,16 @@
         ],
         "summary": "Find opportunities",
         "operationId": "FindOpportunities",
+        "parameters": [
+          {
+            "name": "Active",
+            "in": "query",
+            "description": "Filter on opportunity stage.",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of opportunity matching the specified criteria",
@@ -198,6 +604,38 @@
         "x-apiName": "Opportunity API",
         "x-apiGroup": "Opportunities",
         "x-apiOrder": 1
+      }
+    },
+    "/opportunities/lists/stages": {
+      "get": {
+        "tags": [
+          "Opportunity API:Lists"
+        ],
+        "summary": "Get all stages",
+        "operationId": "GetStages",
+        "responses": {
+          "200": {
+            "description": "List of stages",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StageListModel"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "read",
+              "read_opportunity"
+            ]
+          }
+        ],
+        "x-apiName": "Opportunity API",
+        "x-apiGroup": "Lists",
+        "x-apiOrder": 2
       }
     },
     "/sms/applications/candidate": {
@@ -6771,7 +7209,7 @@
           {
             "name": "UpdatedAt",
             "in": "query",
-            "description": "Search for candidate attachment updated at a specific date and time \r\n(UTC assumed, [ISO date-time](https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#rfc.section.5.6)). \r\nPrefix with ```<``` or ```>``` to search dates before or after (inclusive) the specified date and time.\r\nSpecify multiple times to search for a range.",
+            "description": "Search for candidate attachment created at a specific date and time \r\n(UTC assumed, [ISO date-time](https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#rfc.section.5.6)). \r\nPrefix with ```<``` or ```>``` to search dates before or after (inclusive) the specified date and time.\r\nSpecify multiple times to search for a range.",
             "schema": {
               "type": "array",
               "items": {
@@ -7081,6 +7519,72 @@
         "x-apiName": "Candidate API",
         "x-apiGroup": "Job Applications",
         "x-apiOrder": 51
+      }
+    },
+    "/candidates/{candidateId}/events": {
+      "get": {
+        "tags": [
+          "Candidate API:Events"
+        ],
+        "summary": "Get all events",
+        "operationId": "GetCandidateEvents",
+        "parameters": [
+          {
+            "name": "candidateId",
+            "in": "path",
+            "description": "Candidate Id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Offset",
+            "in": "query",
+            "description": "The index of the first entry to return from the resource collection",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "The maximum number of entries to return.<br />\r\nSetting to 0 will return only the total count of matching resources.",
+            "schema": {
+              "maximum": 1000,
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of events for the specified candidate",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventListRepresentation"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "read",
+              "read_events"
+            ]
+          }
+        ],
+        "x-apiName": "Candidate API",
+        "x-apiGroup": "Events",
+        "x-apiOrder": 53
       }
     },
     "/candidates/{candidateId}/interviews": {
@@ -11558,6 +12062,73 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/JobApplicationStatusByWorkflowListRepresentation"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "read",
+              "read_jobapplication"
+            ]
+          }
+        ],
+        "x-apiName": "Job Application API",
+        "x-apiGroup": "Lists",
+        "x-apiOrder": 100
+      }
+    },
+    "/applications/lists/workflows": {
+      "get": {
+        "tags": [
+          "Job Application API:Lists"
+        ],
+        "summary": "Get the job application workflows",
+        "operationId": "GetWorkflowList",
+        "parameters": [
+          {
+            "name": "PlacementType",
+            "in": "query",
+            "description": "Enum: \"All\", \"Permanent\", \"Contract\"",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "Offset",
+            "in": "query",
+            "description": "The index of the first entry to return from the resource collection",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "The maximum number of entries to return.<br />\r\nSetting to 0 will return only the total count of matching resources.",
+            "schema": {
+              "maximum": 1000,
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job application workflows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobApplicationWorkflowListModel"
                 }
               }
             }
@@ -17708,6 +18279,72 @@
         "x-apiOrder": 3
       }
     },
+    "/contacts/{contactId}/events": {
+      "get": {
+        "tags": [
+          "Contact API:Events"
+        ],
+        "summary": "Get all events",
+        "operationId": "GetContactEvents",
+        "parameters": [
+          {
+            "name": "contactId",
+            "in": "path",
+            "description": "Contact Id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Offset",
+            "in": "query",
+            "description": "The index of the first entry to return from the resource collection",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "The maximum number of entries to return.<br />\r\nSetting to 0 will return only the total count of matching resources.",
+            "schema": {
+              "maximum": 1000,
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of Events for the specified contact",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventListRepresentation"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "read",
+              "read_events"
+            ]
+          }
+        ],
+        "x-apiName": "Contact API",
+        "x-apiGroup": "Events",
+        "x-apiOrder": 4
+      }
+    },
     "/contacts/{contactId}/interviews": {
       "get": {
         "tags": [
@@ -20609,6 +21246,72 @@
         "x-apiName": "User API",
         "x-apiGroup": "Tasks",
         "x-apiOrder": 10
+      }
+    },
+    "/users/{userId}/events": {
+      "get": {
+        "tags": [
+          "User API:Events"
+        ],
+        "summary": "Get all Events",
+        "operationId": "GetUserEvents",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "User Id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Offset",
+            "in": "query",
+            "description": "The index of the first entry to return from the resource collection",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "The maximum number of entries to return.<br />\r\nSetting to 0 will return only the total count of matching resources.",
+            "schema": {
+              "maximum": 1000,
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of events for the specified user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventListRepresentation"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "read",
+              "read_events"
+            ]
+          }
+        ],
+        "x-apiName": "User API",
+        "x-apiGroup": "Events",
+        "x-apiOrder": 11
       }
     },
     "/users/{userId}/interviews": {
@@ -24728,6 +25431,762 @@
         "x-apiGroup": "Webhooks",
         "x-apiOrder": 1
       }
+    },
+    "/events": {
+      "get": {
+        "tags": [
+          "Event Scheduling API:Events"
+        ],
+        "summary": "Find events",
+        "operationId": "FindEvents",
+        "parameters": [
+          {
+            "name": "Title",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "StartDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "EndDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "EventType",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EventSubTypeIds",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          },
+          {
+            "name": "OrganizerId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "EventIds",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          },
+          {
+            "name": "JobIds",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          },
+          {
+            "name": "CandidateIds",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          },
+          {
+            "name": "ContactIds",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          },
+          {
+            "name": "UserIds",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          },
+          {
+            "name": "CreatedBy",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Embed",
+            "in": "query",
+            "description": "Embed related resources.<br />\r\nResources available to embed are: self, evaluations",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "Offset",
+            "in": "query",
+            "description": "The index of the first entry to return from the resource collection",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "The maximum number of entries to return.<br />\r\nSetting to 0 will return only the total count of matching resources.",
+            "schema": {
+              "maximum": 1000,
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of events matching the specified criteria",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventListRepresentation"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "read",
+              "read_events"
+            ]
+          }
+        ],
+        "x-apiName": "Event Scheduling API",
+        "x-apiGroup": "Events",
+        "x-apiOrder": 1
+      },
+      "post": {
+        "tags": [
+          "Event Scheduling API:Events"
+        ],
+        "summary": "Create an event",
+        "operationId": "CreateEvent",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddEventCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventRepresentation"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "write",
+              "write_events"
+            ]
+          }
+        ],
+        "x-apiName": "Event Scheduling API",
+        "x-apiGroup": "Events",
+        "x-apiOrder": 1
+      }
+    },
+    "/events/{eventId}": {
+      "get": {
+        "tags": [
+          "Event Scheduling API:Events"
+        ],
+        "summary": "Get an Event",
+        "operationId": "GetEvent",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Embed",
+            "in": "query",
+            "description": "Embed related resources.<br />\r\nResources available to embed are: evaluations",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Requested event",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventRepresentation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Event was not found"
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "read",
+              "read_events"
+            ]
+          }
+        ],
+        "x-apiName": "Event Scheduling API",
+        "x-apiGroup": "Events",
+        "x-apiOrder": 1
+      },
+      "put": {
+        "tags": [
+          "Event Scheduling API:Events"
+        ],
+        "summary": "Update an event",
+        "operationId": "UpdateEvent",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "description": "Event Id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEventCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Event was successfully updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventRepresentation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Event was not found"
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "write",
+              "write_events"
+            ]
+          }
+        ],
+        "x-apiName": "Event Scheduling API",
+        "x-apiGroup": "Events",
+        "x-apiOrder": 1
+      },
+      "delete": {
+        "tags": [
+          "Event Scheduling API:Events"
+        ],
+        "summary": "Delete an Event",
+        "operationId": "DeleteEvent",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "description": "Event Id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "NoContent"
+          },
+          "404": {
+            "description": "Event was not found"
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "write",
+              "write_events"
+            ]
+          }
+        ],
+        "x-apiName": "Event Scheduling API",
+        "x-apiGroup": "Events",
+        "x-apiOrder": 1
+      }
+    },
+    "/events/subtypes": {
+      "get": {
+        "tags": [
+          "Event Scheduling API:Events"
+        ],
+        "summary": "Get Event Subtypes",
+        "operationId": "GetEventSubTypes",
+        "responses": {
+          "200": {
+            "description": "Event Sub Types",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubTypeListModel"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "read",
+              "read_events"
+            ]
+          }
+        ],
+        "x-apiName": "Event Scheduling API",
+        "x-apiGroup": "Events",
+        "x-apiOrder": 1
+      }
+    },
+    "/events/{eventId}/{applicationId}/evaluations": {
+      "get": {
+        "tags": [
+          "Event Scheduling API:Evaluations"
+        ],
+        "summary": "Get interview evaluations for event",
+        "operationId": "GetEventInterviewEvaluations",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of interview evaluations for event",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewEvaluationListRepresentation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Event was not found"
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "read",
+              "read_events"
+            ]
+          }
+        ],
+        "x-apiName": "Event Scheduling API",
+        "x-apiGroup": "Evaluations",
+        "x-apiOrder": 2
+      }
+    },
+    "/events/{eventId}/{applicationId}/evaluations/contact/{contactId}": {
+      "get": {
+        "tags": [
+          "Event Scheduling API:Evaluations"
+        ],
+        "summary": "Get a contact interview evaluation for event",
+        "operationId": "GetContactEventInterviewEvaluation",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "contactId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contact interview evaluation for event",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewEvaluationRepresentation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Event was not found"
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "read",
+              "read_events"
+            ]
+          }
+        ],
+        "x-apiName": "Event Scheduling API",
+        "x-apiGroup": "Evaluations",
+        "x-apiOrder": 2
+      },
+      "put": {
+        "tags": [
+          "Event Scheduling API:Evaluations"
+        ],
+        "summary": "Submit an contact interview evaluation for event",
+        "operationId": "PutContactEventInterviewEvaluation",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "contactId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitInterviewEvaluationForEventCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Contact interview evaluation for events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewEvaluationRepresentation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Event was not found"
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "write",
+              "write_interview"
+            ]
+          }
+        ],
+        "x-apiName": "Event Scheduling API",
+        "x-apiGroup": "Evaluations",
+        "x-apiOrder": 2
+      }
+    },
+    "/events/{eventId}/{applicationId}/evaluations/user/{userId}": {
+      "get": {
+        "tags": [
+          "Event Scheduling API:Evaluations"
+        ],
+        "summary": "Get an user interview evaluation for event",
+        "operationId": "GetUserEventInterviewEvaluation",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User interview evaluation for event",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewEvaluationRepresentation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Event was not found"
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "read",
+              "read_events"
+            ]
+          }
+        ],
+        "x-apiName": "Event Scheduling API",
+        "x-apiGroup": "Evaluations",
+        "x-apiOrder": 2
+      },
+      "put": {
+        "tags": [
+          "Event Scheduling API:Evaluations"
+        ],
+        "summary": "Submit an user interview evaluation for event",
+        "operationId": "PutUserEventInterviewEvaluation",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitInterviewEvaluationForEventCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User interview evaluation for event",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewEvaluationRepresentation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Event was not found"
+          }
+        },
+        "security": [
+          {
+            "jobadder_identity": [
+              "write",
+              "write_interview"
+            ]
+          }
+        ],
+        "x-apiName": "Event Scheduling API",
+        "x-apiGroup": "Evaluations",
+        "x-apiOrder": 2
+      }
     }
   },
   "components": {
@@ -25178,6 +26637,7 @@
             "nullable": true
           },
           "text": {
+            "maxLength": 65535,
             "minLength": 1,
             "type": "string",
             "description": "Note content"
@@ -25464,6 +26924,7 @@
             "nullable": true
           },
           "text": {
+            "maxLength": 65535,
             "minLength": 1,
             "type": "string",
             "description": "Note content"
@@ -25729,6 +27190,7 @@
             "nullable": true
           },
           "text": {
+            "maxLength": 65535,
             "minLength": 1,
             "type": "string",
             "description": "Note content"
@@ -25835,6 +27297,93 @@
               "format": "int64"
             },
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddEventCommand": {
+        "required": [
+          "endTime",
+          "eventType",
+          "jobId",
+          "startTime",
+          "timeZone",
+          "title"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "eventType": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timeZone": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "eventSubTypeId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "videoConferenceUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "candidateIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "contactIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "userIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "addressId": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "$ref": "#/components/schemas/EventAddressModel"
+          },
+          "companyId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "jobId": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -26015,6 +27564,7 @@
             "nullable": true
           },
           "text": {
+            "maxLength": 65535,
             "minLength": 1,
             "type": "string",
             "description": "Note content"
@@ -26277,6 +27827,12 @@
             },
             "description": "User Id - Optional list of recruiters assigned to the job",
             "nullable": true
+          },
+          "workflowId": {
+            "type": "integer",
+            "description": "Workflow Id",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -26294,6 +27850,7 @@
             "nullable": true
           },
           "text": {
+            "maxLength": 65535,
             "minLength": 1,
             "type": "string",
             "description": "Note content"
@@ -26421,6 +27978,7 @@
             "type": "string"
           },
           "text": {
+            "maxLength": 65535,
             "minLength": 1,
             "type": "string",
             "description": "Note content"
@@ -26709,6 +28267,11 @@
             "format": "uuid",
             "nullable": true
           },
+          "workflowId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
           "chargeCurrency": {
             "type": "string",
             "nullable": true
@@ -26742,6 +28305,7 @@
             "nullable": true
           },
           "text": {
+            "maxLength": 65535,
             "minLength": 1,
             "type": "string",
             "description": "Note content"
@@ -26981,6 +28545,7 @@
             "nullable": true
           },
           "text": {
+            "maxLength": 65535,
             "minLength": 1,
             "type": "string",
             "description": "Note content"
@@ -27508,11 +29073,6 @@
             "format": "date-time",
             "nullable": true
           },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
           "candidateId": {
             "type": "integer",
             "format": "int32",
@@ -27552,11 +29112,6 @@
             "$ref": "#/components/schemas/UserNameModel"
           },
           "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updatedAt": {
             "type": "string",
             "format": "date-time",
             "nullable": true
@@ -31347,6 +32902,16 @@
         },
         "additionalProperties": false
       },
+      "CreatedDataImportModel": {
+        "type": "object",
+        "properties": {
+          "importId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "CreatedOpportunityModel": {
         "type": "object",
         "properties": {
@@ -31547,6 +33112,44 @@
         },
         "additionalProperties": false,
         "description": "Custom field value"
+      },
+      "DataImportModel": {
+        "type": "object",
+        "properties": {
+          "importId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "importType": {
+            "type": "string",
+            "nullable": true
+          },
+          "importState": {
+            "type": "string",
+            "nullable": true
+          },
+          "numberOfRecords": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasSkippedRecords": {
+            "type": "boolean"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserNameModel"
+          },
+          "dateCompleted": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dateCreated": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
       },
       "DateRangeModel": {
         "required": [
@@ -31880,6 +33483,185 @@
         },
         "additionalProperties": false
       },
+      "EventAddressModel": {
+        "type": "object",
+        "properties": {
+          "street": {
+            "type": "string",
+            "nullable": true
+          },
+          "suburb": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "postcode": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EventListRepresentation": {
+        "required": [
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventModel"
+            },
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "links": {
+            "$ref": "#/components/schemas/PageLinks"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EventModel": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "eventType": {
+            "$ref": "#/components/schemas/EventType"
+          },
+          "eventSubType": {
+            "$ref": "#/components/schemas/EventSubTypeModel"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "startTimeUtc": {
+            "type": "string",
+            "properties": {
+              "timeOfDay": {
+                "format": "time"
+              }
+            },
+            "format": "date-time"
+          },
+          "endTimeUtc": {
+            "type": "string",
+            "properties": {
+              "timeOfDay": {
+                "format": "time"
+              }
+            },
+            "format": "date-time"
+          },
+          "timeZone": {
+            "type": "string",
+            "nullable": true
+          },
+          "videoConferenceUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "organizer": {
+            "$ref": "#/components/schemas/UserNameModel"
+          },
+          "job": {
+            "$ref": "#/components/schemas/JobOrderSummaryModel"
+          },
+          "contacts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactNameModel"
+            },
+            "nullable": true
+          },
+          "candidates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CandidateNameModel"
+            },
+            "nullable": true
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserNameModel"
+            },
+            "nullable": true
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/UserNameModel"
+          },
+          "createdAtUtc": {
+            "type": "string",
+            "properties": {
+              "timeOfDay": {
+                "format": "time"
+              }
+            },
+            "format": "date-time"
+          },
+          "updatedBy": {
+            "$ref": "#/components/schemas/UserNameModel"
+          },
+          "updatedAtUtc": {
+            "type": "string",
+            "properties": {
+              "timeOfDay": {
+                "format": "time"
+              }
+            },
+            "format": "date-time"
+          },
+          "companyAddress": {
+            "$ref": "#/components/schemas/CompanyAddressModel"
+          },
+          "address": {
+            "$ref": "#/components/schemas/EventAddressModel"
+          }
+        }
+      },
+      "EventModelLinks": {
+        "type": "object",
+        "properties": {
+          "self": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "evaluations": {
+            "type": "string",
+            "description": "Evaluations and ratings",
+            "format": "uri",
+            "nullable": true
+          }
+        }
+      },
       "EventName": {
         "enum": [
           "job_status_changed",
@@ -31916,7 +33698,156 @@
           "folder_contact_removed",
           "folder_updated",
           "user_suspended",
-          "sms_sent"
+          "sms_sent",
+          "event_scheduled",
+          "event_interview_evaluation_submitted"
+        ],
+        "type": "string",
+        "format": "string"
+      },
+      "EventRepresentation": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "eventType": {
+            "$ref": "#/components/schemas/EventType"
+          },
+          "eventSubType": {
+            "$ref": "#/components/schemas/EventSubTypeModel"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "startTimeUtc": {
+            "type": "string",
+            "properties": {
+              "timeOfDay": {
+                "format": "time"
+              }
+            },
+            "format": "date-time"
+          },
+          "endTimeUtc": {
+            "type": "string",
+            "properties": {
+              "timeOfDay": {
+                "format": "time"
+              }
+            },
+            "format": "date-time"
+          },
+          "timeZone": {
+            "type": "string",
+            "nullable": true
+          },
+          "videoConferenceUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "organizer": {
+            "$ref": "#/components/schemas/UserNameModel"
+          },
+          "job": {
+            "$ref": "#/components/schemas/JobOrderSummaryModel"
+          },
+          "contacts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactNameModel"
+            },
+            "nullable": true
+          },
+          "candidates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CandidateNameModel"
+            },
+            "nullable": true
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserNameModel"
+            },
+            "nullable": true
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/UserNameModel"
+          },
+          "createdAtUtc": {
+            "type": "string",
+            "properties": {
+              "timeOfDay": {
+                "format": "time"
+              }
+            },
+            "format": "date-time"
+          },
+          "updatedBy": {
+            "$ref": "#/components/schemas/UserNameModel"
+          },
+          "updatedAtUtc": {
+            "type": "string",
+            "properties": {
+              "timeOfDay": {
+                "format": "time"
+              }
+            },
+            "format": "date-time"
+          },
+          "companyAddress": {
+            "$ref": "#/components/schemas/CompanyAddressModel"
+          },
+          "address": {
+            "$ref": "#/components/schemas/EventAddressModel"
+          },
+          "links": {
+            "$ref": "#/components/schemas/EventModelLinks"
+          }
+        }
+      },
+      "EventSubTypeListModel": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventSubTypeModel"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EventSubTypeModel": {
+        "type": "object",
+        "properties": {
+          "eventSubTypeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "eventTypeId": {
+            "$ref": "#/components/schemas/EventType"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EventType": {
+        "enum": [
+          "Interview",
+          "Meeting"
         ],
         "type": "string",
         "format": "string"
@@ -34141,6 +36072,61 @@
         },
         "additionalProperties": false
       },
+      "JobApplicationWorkflowDetailModel": {
+        "type": "object",
+        "properties": {
+          "workflowId": {
+            "type": "integer",
+            "description": "Unique identifier for the workflow",
+            "format": "int32"
+          },
+          "workflowName": {
+            "type": "string",
+            "description": "Name of the workflow",
+            "nullable": true
+          },
+          "placementType": {
+            "type": "string",
+            "description": "Type of placement (e.g., \"Permanent\", \"Contract\")",
+            "nullable": true
+          },
+          "userGroup": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserGroupSummaryModel"
+            },
+            "description": "Array of user groups associated with the workflow",
+            "nullable": true
+          },
+          "stages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JobApplicationWorkflowStageModel"
+            },
+            "description": "Array of stages within the workflow",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "JobApplicationWorkflowListModel": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JobApplicationWorkflowDetailModel"
+            },
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "Total number of workflows available",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "JobApplicationWorkflowModel": {
         "required": [
           "stage"
@@ -34166,6 +36152,88 @@
           },
           "progress": {
             "$ref": "#/components/schemas/SimpleWorkflow"
+          }
+        },
+        "additionalProperties": false
+      },
+      "JobApplicationWorkflowStageModel": {
+        "type": "object",
+        "properties": {
+          "stageName": {
+            "type": "string",
+            "description": "Name of the workflow stage",
+            "nullable": true
+          },
+          "stageIndex": {
+            "type": "integer",
+            "description": "Position of the stage within the workflow",
+            "format": "int32",
+            "nullable": true
+          },
+          "step": {
+            "type": "integer",
+            "description": "[Obsolete] Reference stageIndex instead",
+            "format": "int32",
+            "nullable": true
+          },
+          "progress": {
+            "$ref": "#/components/schemas/SimpleWorkflow"
+          },
+          "statuses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JobApplicationWorkflowStageStatusModel"
+            },
+            "description": "Array of statuses within the stage",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "JobApplicationWorkflowStageStatusModel": {
+        "type": "object",
+        "properties": {
+          "statusId": {
+            "type": "integer",
+            "description": "Unique identifier for the status",
+            "format": "int32"
+          },
+          "statusName": {
+            "type": "string",
+            "description": "Name of the status",
+            "nullable": true
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Whether the status is currently active"
+          },
+          "rejected": {
+            "type": "boolean",
+            "description": "Whether this status indicates rejection"
+          },
+          "default": {
+            "type": "boolean",
+            "description": "Whether this is the default status"
+          },
+          "defaultRejected": {
+            "type": "boolean",
+            "description": "Whether this is the default rejected status"
+          }
+        },
+        "additionalProperties": false
+      },
+      "JobApplicationWorkflowSummaryModel": {
+        "type": "object",
+        "properties": {
+          "workflowId": {
+            "type": "integer",
+            "description": "Unique identifier for the workflow",
+            "format": "int32"
+          },
+          "workflowName": {
+            "type": "string",
+            "description": "Name of the workflow",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -35395,6 +37463,9 @@
           },
           "skillTags": {
             "$ref": "#/components/schemas/JobOrderSkillTags"
+          },
+          "workflow": {
+            "$ref": "#/components/schemas/JobApplicationWorkflowSummaryModel"
           },
           "custom": {
             "type": "array",
@@ -39900,6 +41971,26 @@
         },
         "additionalProperties": false
       },
+      "StageListModel": {
+        "required": [
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OpportunityStageModel"
+            },
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "StatusListRepresentation": {
         "type": "object",
         "properties": {
@@ -40390,6 +42481,23 @@
         "additionalProperties": false
       },
       "SubmitInterviewEvaluationCommand": {
+        "type": "object",
+        "properties": {
+          "comments": {
+            "type": "string",
+            "nullable": true
+          },
+          "rating": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubmitInterviewEvaluationRatingModel"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SubmitInterviewEvaluationForEventCommand": {
         "type": "object",
         "properties": {
           "comments": {
@@ -41868,6 +43976,92 @@
         },
         "additionalProperties": false
       },
+      "UpdateEventCommand": {
+        "required": [
+          "endTime",
+          "eventType",
+          "startTime",
+          "timeZone",
+          "title"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "eventType": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timeZone": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "eventSubTypeId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "videoConferenceUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "candidateIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "contactIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "userIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "addressId": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "$ref": "#/components/schemas/EventAddressModel"
+          },
+          "companyId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "eventId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "UpdateJobAdDraftCommand": {
         "type": "object",
         "properties": {
@@ -42223,6 +44417,12 @@
             },
             "description": "User Id - Optional list of recruiters assigned to the job",
             "nullable": true
+          },
+          "workflowId": {
+            "type": "integer",
+            "description": "Workflow Id",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -42341,6 +44541,7 @@
             "nullable": true
           },
           "text": {
+            "maxLength": 65535,
             "type": "string",
             "description": "Note content",
             "nullable": true
@@ -44061,6 +46262,8 @@
               "manage_contact_custom": "Manage contact custom fields",
               "read_contact_note": "View contact notes",
               "write_contact_note": "Manage contact notes",
+              "read_events": "View scheduled events (meetings/interviews)",
+              "write_events": "Manage scheduled events (meetings/interviews)",
               "read_float": "View floats",
               "read_folder": "View folders",
               "write_folder": "Manage folders",
@@ -44138,6 +46341,10 @@
     {
       "name": "Candidate API:Job Applications",
       "x-displayName": "Job Applications"
+    },
+    {
+      "name": "Candidate API:Events",
+      "x-displayName": "Events"
     },
     {
       "name": "Candidate API:Interviews",
@@ -44260,6 +46467,10 @@
       "x-displayName": "Jobs"
     },
     {
+      "name": "Contact API:Events",
+      "x-displayName": "Events"
+    },
+    {
       "name": "Contact API:Interviews",
       "x-displayName": "Interviews"
     },
@@ -44288,8 +46499,24 @@
       "x-displayName": "UserTasks"
     },
     {
+      "name": "Event Scheduling API:Events",
+      "x-displayName": "Events"
+    },
+    {
+      "name": "Event Scheduling API:Evaluations",
+      "x-displayName": "Evaluations"
+    },
+    {
       "name": "Folder API:Folders",
       "x-displayName": "Folders"
+    },
+    {
+      "name": "Import API:Contacts",
+      "x-displayName": "Contacts"
+    },
+    {
+      "name": "Import API:Notes",
+      "x-displayName": "Notes"
     },
     {
       "name": "Interview API:Interviews",
@@ -44416,6 +46643,14 @@
       "x-displayName": "Attachments"
     },
     {
+      "name": "Opportunity API:Opportunities",
+      "x-displayName": "Opportunities"
+    },
+    {
+      "name": "Opportunity API:Lists",
+      "x-displayName": "Lists"
+    },
+    {
       "name": "Partner Action API:Actions",
       "x-displayName": "Actions"
     },
@@ -44500,12 +46735,20 @@
       "x-displayName": "Search"
     },
     {
+      "name": "Sms API:Sms",
+      "x-displayName": "Sms"
+    },
+    {
       "name": "User API:Users",
       "x-displayName": "Users"
     },
     {
       "name": "User API:Tasks",
       "x-displayName": "Tasks"
+    },
+    {
+      "name": "User API:Events",
+      "x-displayName": "Events"
     },
     {
       "name": "User API:Interviews",
@@ -44545,6 +46788,26 @@
     }
   ],
   "x-tagGroups": [
+    {
+      "name": "Import API",
+      "tags": [
+        "Import API:Contacts",
+        "Import API:Notes"
+      ]
+    },
+    {
+      "name": "Opportunity API",
+      "tags": [
+        "Opportunity API:Opportunities",
+        "Opportunity API:Lists"
+      ]
+    },
+    {
+      "name": "Sms API",
+      "tags": [
+        "Sms API:Sms"
+      ]
+    },
     {
       "name": "Job Board API",
       "tags": [
@@ -44597,6 +46860,7 @@
         "Candidate API:Attachments",
         "Candidate API:Floats",
         "Candidate API:Job Applications",
+        "Candidate API:Events",
         "Candidate API:Interviews",
         "Candidate API:Submissions",
         "Candidate API:Placements",
@@ -44672,6 +46936,7 @@
       "tags": [
         "Contact API:Contacts",
         "Contact API:Jobs",
+        "Contact API:Events",
         "Contact API:Interviews",
         "Contact API:Skills",
         "Contact API:Attachments",
@@ -44699,6 +46964,7 @@
       "tags": [
         "User API:Users",
         "User API:Tasks",
+        "User API:Events",
         "User API:Interviews",
         "User API:Groups"
       ]
@@ -44772,6 +47038,13 @@
       "name": "Webhook API",
       "tags": [
         "Webhook API:Webhooks"
+      ]
+    },
+    {
+      "name": "Event Scheduling API",
+      "tags": [
+        "Event Scheduling API:Events",
+        "Event Scheduling API:Evaluations"
       ]
     }
   ]
