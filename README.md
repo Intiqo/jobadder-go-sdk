@@ -205,6 +205,12 @@ If you need to regenerate the SDK, make sure you have the OpenAPI specification 
 oapi-codegen --package=api --generate types,client openapi.json > ./api/api.gen.go
 ```
 
+Alternatively, it can also be generated using the following command:
+
+```sh
+oapi-codegen -config oapi-config.yaml openapi.json
+```
+
 ## Contributing
 
 We welcome contributions to the JobAdder SDK! If you find any issues or have suggestions for improvements, feel free to open an issue or submit a pull request.

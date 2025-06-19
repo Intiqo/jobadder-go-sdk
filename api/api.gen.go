@@ -6417,19 +6417,19 @@ type UpdatePlacementAttachmentCommand struct {
 
 // UpdatePlacementCommand defines model for UpdatePlacementCommand.
 type UpdatePlacementCommand struct {
-	Award        *string                           `json:"award"`
+	Award        *string                           `json:"award,omitempty"`
 	Billing      *SubmitPlacementBillingModel      `json:"billing,omitempty"`
 	ContactId    *int32                            `json:"contactId"`
 	ContractRate *SubmitPlacementContractRateModel `json:"contractRate,omitempty"`
-	Custom       *[]SubmitCustomFieldValueModel    `json:"custom"`
+	Custom       *[]SubmitCustomFieldValueModel    `json:"custom,omitempty"`
 
 	// EndDate Date a contract or temporary employment ends
 	EndDate      *openapi_types.Date              `json:"endDate"`
 	FeeSplit     *RatePortion                     `json:"feeSplit,omitempty"`
-	IndustryCode *string                          `json:"industryCode"`
+	IndustryCode *string                          `json:"industryCode,omitempty"`
 	JobTitle     *string                          `json:"jobTitle"`
 	PaymentType  *string                          `json:"paymentType"`
-	Recruiters   *[]SubmitPlacementRecruiterModel `json:"recruiters"`
+	Recruiters   *[]SubmitPlacementRecruiterModel `json:"recruiters,omitempty"`
 	Salary       *SubmitPlacementSalaryModel      `json:"salary,omitempty"`
 
 	// StartDate Date employment begins
@@ -6437,7 +6437,7 @@ type UpdatePlacementCommand struct {
 
 	// StatusId Placement status
 	StatusId *int32  `json:"statusId"`
-	Summary  *string `json:"summary"`
+	Summary  *string `json:"summary,omitempty"`
 }
 
 // UpdatePlacementPartnerActionCommand defines model for UpdatePlacementPartnerActionCommand.
