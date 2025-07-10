@@ -22,6 +22,7 @@ type jobAdderTokenResult struct {
 	TokenType    string `json:"token_type"`
 	ExpiresIn    int    `json:"expires_in"`
 	Api          string `json:"api"`
+	Instance     string `json:"instance"`
 }
 
 type JobAdderClientParams struct {
@@ -33,6 +34,7 @@ type JobAdderClientParams struct {
 	AccessToken       string
 	RefreshToken      string
 	TokenExpiryTime   time.Time
+	Instance          string
 }
 
 type JobAdderClient struct {
@@ -110,6 +112,7 @@ func (c *JobAdderClient) Authenticate() (err error) {
 	c.Params.RefreshToken = result.RefreshToken
 	c.Params.APIBaseURL = result.Api
 	c.Params.TokenExpiryTime = time.Now().Add(time.Duration(result.ExpiresIn) * time.Second)
+	c.Params.Instance = result.Instance
 
 	return nil
 }
