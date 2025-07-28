@@ -855,16 +855,19 @@ type AddJobOrderCandidateCommand struct {
 
 // AddJobOrderCommand defines model for AddJobOrderCommand.
 type AddJobOrderCommand struct {
-	Category       *SubmitCategoryModel           `json:"category,omitempty"`
-	CompanyId      *int32                         `json:"companyId"`
-	ContactId      *int32                         `json:"contactId"`
-	Custom         *[]SubmitCustomFieldValueModel `json:"custom"`
-	Duration       *SubmitDurationModel           `json:"duration,omitempty"`
-	Fee            *SubmitJobOrderFeeModel        `json:"fee,omitempty"`
-	JobDescription *string                        `json:"jobDescription"`
-	JobTitle       *string                        `json:"jobTitle"`
-	Location       *SubmitLocationModel           `json:"location,omitempty"`
-	NumberOfJobs   *int32                         `json:"numberOfJobs,omitempty"`
+	Category  *SubmitCategoryModel           `json:"category,omitempty"`
+	CompanyId *int32                         `json:"companyId"`
+	ContactId *int32                         `json:"contactId"`
+	Custom    *[]SubmitCustomFieldValueModel `json:"custom"`
+	Duration  *SubmitDurationModel           `json:"duration,omitempty"`
+
+	// EndDate The specific date that the job end
+	EndDate        *openapi_types.Date     `json:"endDate"`
+	Fee            *SubmitJobOrderFeeModel `json:"fee,omitempty"`
+	JobDescription *string                 `json:"jobDescription"`
+	JobTitle       *string                 `json:"jobTitle"`
+	Location       *SubmitLocationModel    `json:"location,omitempty"`
+	NumberOfJobs   *int32                  `json:"numberOfJobs,omitempty"`
 
 	// OwnerUserId User Id - Owner of this job
 	OwnerUserId *int32 `json:"ownerUserId,omitempty"`
@@ -880,11 +883,10 @@ type AddJobOrderCommand struct {
 	StatusId *int32 `json:"statusId"`
 
 	// UserFavourite Job is a favourite for the current user
-	UserFavourite *bool  `json:"userFavourite"`
-	WorkTypeId    *int32 `json:"workTypeId"`
-
-	// WorkflowId Workflow Id
-	WorkflowId *int32 `json:"workflowId"`
+	UserFavourite *bool                         `json:"userFavourite"`
+	WorkShift     *SubmitJobOrderWorkShiftModel `json:"workShift,omitempty"`
+	WorkTypeId    *int32                        `json:"workTypeId"`
+	WorkflowId    *int32                        `json:"workflowId"`
 
 	// WorkplaceAddressId Workplace Address Id
 	WorkplaceAddressId *openapi_types.UUID `json:"workplaceAddressId"`
@@ -1278,8 +1280,8 @@ type CandidateAttachmentType string
 
 // CandidateAvailabilityListRepresentation defines model for CandidateAvailabilityListRepresentation.
 type CandidateAvailabilityListRepresentation struct {
-	Items *[]CandidateAvailabilityModel `json:"items"`
-	Links *ModelLinks                   `json:"links,omitempty"`
+	Items *map[string]interface{} `json:"items"`
+	Links *ModelLinks             `json:"links,omitempty"`
 }
 
 // CandidateAvailabilityModel defines model for CandidateAvailabilityModel.
@@ -1371,8 +1373,14 @@ type CandidateLinks struct {
 	// Contact Optional contact if candidate is also a contact
 	Contact *string `json:"contact"`
 
+	// CoverLetter CoverLetter Attachment
+	CoverLetter *string `json:"coverLetter"`
+
 	// Floats Floats
 	Floats *string `json:"floats"`
+
+	// FormattedResume Formated Attachment
+	FormattedResume *string `json:"formattedResume"`
 
 	// Notes Notes
 	Notes *string `json:"notes"`
@@ -1382,7 +1390,10 @@ type CandidateLinks struct {
 
 	// Placements Placements
 	Placements *string `json:"placements"`
-	Self       *string `json:"self"`
+
+	// Resume Resume Attachment
+	Resume *string `json:"resume"`
+	Self   *string `json:"self"`
 
 	// Skills Skills
 	Skills *string `json:"skills"`
@@ -2023,13 +2034,13 @@ type CompanyNameModel struct {
 // CompanyRepresentation defines model for CompanyRepresentation.
 type CompanyRepresentation struct {
 	// CompanyId Unique identifier for the company
-	CompanyId   int32                    `json:"companyId"`
-	CreatedAt   *time.Time               `json:"createdAt"`
-	CreatedBy   *UserNameModel           `json:"createdBy,omitempty"`
-	Custom      *[]CustomFieldValueModel `json:"custom"`
-	LegalName   *string                  `json:"legalName"`
-	Links       *CompanyLinks            `json:"links,omitempty"`
-	MainContact *ContactNameModel        `json:"mainContact,omitempty"`
+	CompanyId   int32                   `json:"companyId"`
+	CreatedAt   *time.Time              `json:"createdAt"`
+	CreatedBy   *UserNameModel          `json:"createdBy,omitempty"`
+	Custom      *map[string]interface{} `json:"custom"`
+	LegalName   *string                 `json:"legalName"`
+	Links       *CompanyLinks           `json:"links,omitempty"`
+	MainContact *ContactNameModel       `json:"mainContact,omitempty"`
 
 	// Name Company name
 	Name           *string                    `json:"name"`
@@ -2438,10 +2449,10 @@ type ContactRepresentation struct {
 	Company *CompanyNameModel `json:"company,omitempty"`
 
 	// ContactId Unique identifier for the contact
-	ContactId int32                    `json:"contactId"`
-	CreatedAt *time.Time               `json:"createdAt"`
-	CreatedBy *UserNameModel           `json:"createdBy,omitempty"`
-	Custom    *[]CustomFieldValueModel `json:"custom"`
+	ContactId int32                   `json:"contactId"`
+	CreatedAt *time.Time              `json:"createdAt"`
+	CreatedBy *UserNameModel          `json:"createdBy,omitempty"`
+	Custom    *map[string]interface{} `json:"custom"`
 
 	// Email Primary email address
 	Email *string `json:"email"`
@@ -3040,12 +3051,12 @@ type InterviewEvaluationListRepresentation struct {
 
 // InterviewEvaluationModel defines model for InterviewEvaluationModel.
 type InterviewEvaluationModel struct {
-	Comments   *string                           `json:"comments"`
-	Contact    *ContactNameModel                 `json:"contact,omitempty"`
-	ExpiresAt  *time.Time                        `json:"expiresAt,omitempty"`
-	HasReplied *bool                             `json:"hasReplied,omitempty"`
-	Rating     *[]InterviewEvaluationRatingModel `json:"rating"`
-	User       *UserNameModel                    `json:"user,omitempty"`
+	Comments   *string                 `json:"comments"`
+	Contact    *ContactNameModel       `json:"contact,omitempty"`
+	ExpiresAt  *time.Time              `json:"expiresAt,omitempty"`
+	HasReplied *bool                   `json:"hasReplied,omitempty"`
+	Rating     *map[string]interface{} `json:"rating"`
+	User       *UserNameModel          `json:"user,omitempty"`
 }
 
 // InterviewEvaluationRatingModel defines model for InterviewEvaluationRatingModel.
@@ -3059,13 +3070,13 @@ type InterviewEvaluationRatingModel struct {
 
 // InterviewEvaluationRepresentation defines model for InterviewEvaluationRepresentation.
 type InterviewEvaluationRepresentation struct {
-	Comments   *string                           `json:"comments"`
-	Contact    *ContactNameModel                 `json:"contact,omitempty"`
-	ExpiresAt  *time.Time                        `json:"expiresAt,omitempty"`
-	HasReplied *bool                             `json:"hasReplied,omitempty"`
-	Links      *ModelLinks                       `json:"links,omitempty"`
-	Rating     *[]InterviewEvaluationRatingModel `json:"rating"`
-	User       *UserNameModel                    `json:"user,omitempty"`
+	Comments   *string                 `json:"comments"`
+	Contact    *ContactNameModel       `json:"contact,omitempty"`
+	ExpiresAt  *time.Time              `json:"expiresAt,omitempty"`
+	HasReplied *bool                   `json:"hasReplied,omitempty"`
+	Links      *ModelLinks             `json:"links,omitempty"`
+	Rating     *map[string]interface{} `json:"rating"`
+	User       *UserNameModel          `json:"user,omitempty"`
 }
 
 // InterviewInterviewersModel Internal/user and External/contact interviewers
@@ -3373,7 +3384,7 @@ type JobApplicationRepresentation struct {
 	Candidate        *CandidateNameModel                  `json:"candidate,omitempty"`
 	CreatedAt        *time.Time                           `json:"createdAt"`
 	CreatedBy        *UserNameModel                       `json:"createdBy,omitempty"`
-	Custom           *[]CustomFieldValueModel             `json:"custom"`
+	Custom           *map[string]interface{}              `json:"custom"`
 	Job              *JobOrderTitleModel                  `json:"job,omitempty"`
 	JobAd            *JobAdSummaryModel                   `json:"jobAd,omitempty"`
 	JobReference     *string                              `json:"jobReference"`
@@ -4434,9 +4445,10 @@ type Operation struct {
 // OperationType defines model for OperationType.
 type OperationType string
 
-// OpportunityListModel defines model for OpportunityListModel.
-type OpportunityListModel struct {
+// OpportunityListRepresentation defines model for OpportunityListRepresentation.
+type OpportunityListRepresentation struct {
 	Items      *[]OpportunitySummaryModel `json:"items"`
+	Links      *PageLinks                 `json:"links,omitempty"`
 	TotalCount int32                      `json:"totalCount"`
 }
 
@@ -4927,6 +4939,7 @@ type PlacementRepresentation struct {
 	Links          *PlacementLinks            `json:"links,omitempty"`
 	Owner          *UserNameModel             `json:"owner,omitempty"`
 	PartnerActions *[]PartnerActionStageModel `json:"partnerActions"`
+	PayCurrency    *string                    `json:"payCurrency"`
 	PaymentType    *string                    `json:"paymentType"`
 	PlacementId    int32                      `json:"placementId"`
 	Rates          *[]PlacementRateModel      `json:"rates"`
@@ -5216,7 +5229,7 @@ type RequisitionRepresentation struct {
 	Category       *JobOrderCategoryModel    `json:"category,omitempty"`
 	Company        *CompanyNameModel         `json:"company,omitempty"`
 	CreatedAt      *time.Time                `json:"createdAt"`
-	Custom         *[]CustomFieldValueModel  `json:"custom"`
+	Custom         *map[string]interface{}   `json:"custom"`
 	Duration       *DurationModel            `json:"duration,omitempty"`
 	FormID         *int32                    `json:"formID"`
 	HiringManager  *ContactNameModel         `json:"hiringManager,omitempty"`
@@ -5767,8 +5780,6 @@ type SubmitJobOrderCandidateCommand struct {
 
 // SubmitJobOrderFeeModel defines model for SubmitJobOrderFeeModel.
 type SubmitJobOrderFeeModel struct {
-	Currency *string `json:"currency"`
-
 	// EstimatedTotal Optional estimated total fee. If not specified it will be calculated from the duration, salary and fee rate.
 	EstimatedTotal *float64             `json:"estimatedTotal,omitempty"`
 	Rate           *float64             `json:"rate,omitempty"`
@@ -5801,6 +5812,20 @@ type SubmitJobOrderStartModel struct {
 	Date      *openapi_types.Date       `json:"date"`
 	Immediate *bool                     `json:"immediate,omitempty"`
 	Relative  *SubmitRelativeStartModel `json:"relative,omitempty"`
+}
+
+// SubmitJobOrderWorkShiftModel defines model for SubmitJobOrderWorkShiftModel.
+type SubmitJobOrderWorkShiftModel struct {
+	// EndTime TimeSpan with format: HH:mm
+	// Example: 14:21
+	EndTime *string `json:"endTime"`
+
+	// StartTime TimeSpan with format: HH:mm
+	// Example: 17:21
+	StartTime *string `json:"startTime"`
+
+	// WorkDays Day of week: Sunday, Monday,Tuesday, Wednesday, Thursday, Friday, Saturday
+	WorkDays *[]string `json:"workDays"`
 }
 
 // SubmitLocationModel defines model for SubmitLocationModel.
@@ -6301,16 +6326,19 @@ type UpdateJobOrderAttachmentCommand struct {
 
 // UpdateJobOrderCommand defines model for UpdateJobOrderCommand.
 type UpdateJobOrderCommand struct {
-	Category       *SubmitCategoryModel           `json:"category,omitempty"`
-	CompanyId      *int32                         `json:"companyId"`
-	ContactId      *int32                         `json:"contactId"`
-	Custom         *[]SubmitCustomFieldValueModel `json:"custom"`
-	Duration       *SubmitDurationModel           `json:"duration,omitempty"`
-	Fee            *SubmitJobOrderFeeModel        `json:"fee,omitempty"`
-	JobDescription *string                        `json:"jobDescription"`
-	JobTitle       *string                        `json:"jobTitle"`
-	Location       *SubmitLocationModel           `json:"location,omitempty"`
-	NumberOfJobs   *int32                         `json:"numberOfJobs,omitempty"`
+	Category  *SubmitCategoryModel           `json:"category,omitempty"`
+	CompanyId *int32                         `json:"companyId"`
+	ContactId *int32                         `json:"contactId"`
+	Custom    *[]SubmitCustomFieldValueModel `json:"custom"`
+	Duration  *SubmitDurationModel           `json:"duration,omitempty"`
+
+	// EndDate The specific date that the job end
+	EndDate        *openapi_types.Date     `json:"endDate"`
+	Fee            *SubmitJobOrderFeeModel `json:"fee,omitempty"`
+	JobDescription *string                 `json:"jobDescription"`
+	JobTitle       *string                 `json:"jobTitle"`
+	Location       *SubmitLocationModel    `json:"location,omitempty"`
+	NumberOfJobs   *int32                  `json:"numberOfJobs,omitempty"`
 
 	// OwnerUserId User Id - Owner of this job
 	OwnerUserId *int32 `json:"ownerUserId,omitempty"`
@@ -6326,11 +6354,10 @@ type UpdateJobOrderCommand struct {
 	StatusId *int32 `json:"statusId"`
 
 	// UserFavourite Job is a favourite for the current user
-	UserFavourite *bool  `json:"userFavourite"`
-	WorkTypeId    *int32 `json:"workTypeId"`
-
-	// WorkflowId Workflow Id
-	WorkflowId *int32 `json:"workflowId"`
+	UserFavourite *bool                         `json:"userFavourite"`
+	WorkShift     *SubmitJobOrderWorkShiftModel `json:"workShift,omitempty"`
+	WorkTypeId    *int32                        `json:"workTypeId"`
+	WorkflowId    *int32                        `json:"workflowId"`
 
 	// WorkplaceAddressId Workplace Address Id
 	WorkplaceAddressId *openapi_types.UUID `json:"workplaceAddressId"`
@@ -6372,14 +6399,14 @@ type UpdateNoteCommand struct {
 
 // UpdateOpportunityCommand defines model for UpdateOpportunityCommand.
 type UpdateOpportunityCommand struct {
-	AdditionalInformation *string            `json:"additionalInformation"`
-	CompanyId             int32              `json:"companyId"`
-	EstimatedClose        *time.Time         `json:"estimatedClose"`
-	OpportunityTitle      string             `json:"opportunityTitle"`
-	OwnerUserIds          []int32            `json:"ownerUserIds"`
-	StageId               openapi_types.UUID `json:"stageId"`
-	Value                 *float64           `json:"value"`
-	WorkTypeId            *int32             `json:"workTypeId"`
+	AdditionalInformation *string             `json:"additionalInformation"`
+	CompanyId             *int32              `json:"companyId,omitempty"`
+	EstimatedClose        *time.Time          `json:"estimatedClose"`
+	OpportunityTitle      *string             `json:"opportunityTitle"`
+	OwnerUserIds          *[]int32            `json:"ownerUserIds"`
+	StageId               *openapi_types.UUID `json:"stageId"`
+	Value                 *float64            `json:"value"`
+	WorkTypeId            *int32              `json:"workTypeId"`
 }
 
 // UpdatePartnerActionCommand defines model for UpdatePartnerActionCommand.
@@ -6417,19 +6444,19 @@ type UpdatePlacementAttachmentCommand struct {
 
 // UpdatePlacementCommand defines model for UpdatePlacementCommand.
 type UpdatePlacementCommand struct {
-	Award        *string                           `json:"award,omitempty"`
+	Award        *string                           `json:"award"`
 	Billing      *SubmitPlacementBillingModel      `json:"billing,omitempty"`
 	ContactId    *int32                            `json:"contactId"`
 	ContractRate *SubmitPlacementContractRateModel `json:"contractRate,omitempty"`
-	Custom       *[]SubmitCustomFieldValueModel    `json:"custom,omitempty"`
+	Custom       *[]SubmitCustomFieldValueModel    `json:"custom"`
 
 	// EndDate Date a contract or temporary employment ends
 	EndDate      *openapi_types.Date              `json:"endDate"`
 	FeeSplit     *RatePortion                     `json:"feeSplit,omitempty"`
-	IndustryCode *string                          `json:"industryCode,omitempty"`
+	IndustryCode *string                          `json:"industryCode"`
 	JobTitle     *string                          `json:"jobTitle"`
 	PaymentType  *string                          `json:"paymentType"`
-	Recruiters   *[]SubmitPlacementRecruiterModel `json:"recruiters,omitempty"`
+	Recruiters   *[]SubmitPlacementRecruiterModel `json:"recruiters"`
 	Salary       *SubmitPlacementSalaryModel      `json:"salary,omitempty"`
 
 	// StartDate Date employment begins
@@ -6437,7 +6464,7 @@ type UpdatePlacementCommand struct {
 
 	// StatusId Placement status
 	StatusId *int32  `json:"statusId"`
-	Summary  *string `json:"summary,omitempty"`
+	Summary  *string `json:"summary"`
 }
 
 // UpdatePlacementPartnerActionCommand defines model for UpdatePlacementPartnerActionCommand.
@@ -8591,6 +8618,43 @@ type AddNoteAttachmentMultipartBody struct {
 type FindOpportunitiesParams struct {
 	// Active Filter on opportunity stage.
 	Active *bool `form:"Active,omitempty" json:"Active,omitempty"`
+
+	// OwnerId Search for opportunities by owner
+	OwnerId *[]int32 `form:"OwnerId,omitempty" json:"OwnerId,omitempty"`
+
+	// CompanyId Search for opportunities by company
+	CompanyId *[]int32 `form:"CompanyId,omitempty" json:"CompanyId,omitempty"`
+
+	// WorkTypeId Search for opportunities by worktype
+	WorkTypeId *[]int32 `form:"WorkTypeId,omitempty" json:"WorkTypeId,omitempty"`
+
+	// UserGroupId Search for opportunities by user group
+	UserGroupId *[]int32 `form:"UserGroupId,omitempty" json:"UserGroupId,omitempty"`
+
+	// EstimatedClose Search for opportunities with a specific estimated close date
+	// (UTC assumed, [ISO date-time](https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#rfc.section.5.6)).
+	// Prefix with ```<``` or ```>``` to search dates before or after (inclusive) the specified date and time.
+	// Specify multiple times to search for a range.
+	EstimatedClose *[]string `form:"EstimatedClose,omitempty" json:"EstimatedClose,omitempty"`
+
+	// CreatedAt Search for opportunities created at a specific date and time
+	// (UTC assumed, [ISO date-time](https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#rfc.section.5.6)).
+	// Prefix with ```<``` or ```>``` to search dates before or after (inclusive) the specified date and time.
+	// Specify multiple times to search for a range.
+	CreatedAt *[]string `form:"CreatedAt,omitempty" json:"CreatedAt,omitempty"`
+
+	// UpdatedAt Search for opportunities updated at a specific date and time
+	// (UTC assumed, [ISO date-time](https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#rfc.section.5.6)).
+	// Prefix with ```<``` or ```>``` to search dates before or after (inclusive) the specified date and time.
+	// Specify multiple times to search for a range.
+	UpdatedAt *[]string `form:"UpdatedAt,omitempty" json:"UpdatedAt,omitempty"`
+
+	// Offset The index of the first entry to return from the resource collection
+	Offset *int32 `form:"Offset,omitempty" json:"Offset,omitempty"`
+
+	// Limit The maximum number of entries to return.<br />
+	// Setting to 0 will return only the total count of matching resources.
+	Limit *int32 `form:"Limit,omitempty" json:"Limit,omitempty"`
 }
 
 // FindPartnerActionsParams defines parameters for FindPartnerActions.
@@ -35823,6 +35887,150 @@ func NewFindOpportunitiesRequest(server string, params *FindOpportunitiesParams)
 
 		}
 
+		if params.OwnerId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "OwnerId", runtime.ParamLocationQuery, *params.OwnerId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.CompanyId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "CompanyId", runtime.ParamLocationQuery, *params.CompanyId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.WorkTypeId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "WorkTypeId", runtime.ParamLocationQuery, *params.WorkTypeId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.UserGroupId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "UserGroupId", runtime.ParamLocationQuery, *params.UserGroupId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.EstimatedClose != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "EstimatedClose", runtime.ParamLocationQuery, *params.EstimatedClose); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.CreatedAt != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "CreatedAt", runtime.ParamLocationQuery, *params.CreatedAt); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.UpdatedAt != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "UpdatedAt", runtime.ParamLocationQuery, *params.UpdatedAt); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "Offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "Limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		queryURL.RawQuery = queryValues.Encode()
 	}
 
@@ -51524,7 +51732,7 @@ func (r GetNoteAttachmentResponse) StatusCode() int {
 type FindOpportunitiesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *OpportunityListModel
+	JSON200      *OpportunityListRepresentation
 }
 
 // Status returns HTTPResponse.Status
@@ -51613,6 +51821,7 @@ func (r GetOpportunityResponse) StatusCode() int {
 type UpdateOpportunityResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *CreatedOpportunityModel
 	JSON422      *ErrorModel
 }
 
@@ -66271,7 +66480,7 @@ func ParseFindOpportunitiesResponse(rsp *http.Response) (*FindOpportunitiesRespo
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest OpportunityListModel
+		var dest OpportunityListRepresentation
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -66381,6 +66590,13 @@ func ParseUpdateOpportunityResponse(rsp *http.Response) (*UpdateOpportunityRespo
 	}
 
 	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CreatedOpportunityModel
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest ErrorModel
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
