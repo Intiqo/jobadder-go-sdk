@@ -2034,13 +2034,13 @@ type CompanyNameModel struct {
 // CompanyRepresentation defines model for CompanyRepresentation.
 type CompanyRepresentation struct {
 	// CompanyId Unique identifier for the company
-	CompanyId   int32                   `json:"companyId"`
-	CreatedAt   *time.Time              `json:"createdAt"`
-	CreatedBy   *UserNameModel          `json:"createdBy,omitempty"`
-	Custom      *map[string]interface{} `json:"custom"`
-	LegalName   *string                 `json:"legalName"`
-	Links       *CompanyLinks           `json:"links,omitempty"`
-	MainContact *ContactNameModel       `json:"mainContact,omitempty"`
+	CompanyId   int32                    `json:"companyId"`
+	CreatedAt   *time.Time               `json:"createdAt"`
+	CreatedBy   *UserNameModel           `json:"createdBy,omitempty"`
+	Custom      *[]CustomFieldValueModel `json:"custom"`
+	LegalName   *string                  `json:"legalName"`
+	Links       *CompanyLinks            `json:"links,omitempty"`
+	MainContact *ContactNameModel        `json:"mainContact,omitempty"`
 
 	// Name Company name
 	Name           *string                    `json:"name"`
@@ -2449,10 +2449,10 @@ type ContactRepresentation struct {
 	Company *CompanyNameModel `json:"company,omitempty"`
 
 	// ContactId Unique identifier for the contact
-	ContactId int32                   `json:"contactId"`
-	CreatedAt *time.Time              `json:"createdAt"`
-	CreatedBy *UserNameModel          `json:"createdBy,omitempty"`
-	Custom    *map[string]interface{} `json:"custom"`
+	ContactId int32                    `json:"contactId"`
+	CreatedAt *time.Time               `json:"createdAt"`
+	CreatedBy *UserNameModel           `json:"createdBy,omitempty"`
+	Custom    *[]CustomFieldValueModel `json:"custom"`
 
 	// Email Primary email address
 	Email *string `json:"email"`
@@ -3384,7 +3384,7 @@ type JobApplicationRepresentation struct {
 	Candidate        *CandidateNameModel                  `json:"candidate,omitempty"`
 	CreatedAt        *time.Time                           `json:"createdAt"`
 	CreatedBy        *UserNameModel                       `json:"createdBy,omitempty"`
-	Custom           *map[string]interface{}              `json:"custom"`
+	Custom           *[]CustomFieldValueModel             `json:"custom"`
 	Job              *JobOrderTitleModel                  `json:"job,omitempty"`
 	JobAd            *JobAdSummaryModel                   `json:"jobAd,omitempty"`
 	JobReference     *string                              `json:"jobReference"`
@@ -5229,7 +5229,7 @@ type RequisitionRepresentation struct {
 	Category       *JobOrderCategoryModel    `json:"category,omitempty"`
 	Company        *CompanyNameModel         `json:"company,omitempty"`
 	CreatedAt      *time.Time                `json:"createdAt"`
-	Custom         *map[string]interface{}   `json:"custom"`
+	Custom         *[]CustomFieldValueModel  `json:"custom"`
 	Duration       *DurationModel            `json:"duration,omitempty"`
 	FormID         *int32                    `json:"formID"`
 	HiringManager  *ContactNameModel         `json:"hiringManager,omitempty"`

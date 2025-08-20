@@ -31501,7 +31501,7 @@
             "$ref": "#/components/schemas/CompanyNameModel"
           },
           "custom": {
-            "type": "object",
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/CustomFieldValueModel"
             },
@@ -32850,7 +32850,7 @@
             "type": "boolean"
           },
           "custom": {
-            "type": "object",
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/CustomFieldValueModel"
             },
@@ -35951,7 +35951,7 @@
             "$ref": "#/components/schemas/JobApplicationScreeningModel"
           },
           "custom": {
-            "type": "object",
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/CustomFieldValueModel"
             },
@@ -41792,7 +41792,7 @@
             "$ref": "#/components/schemas/JobOrderSalaryRangeModel"
           },
           "custom": {
-            "type": "object",
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/CustomFieldValueModel"
             },
